@@ -73,9 +73,9 @@ $ cat /tmp/Logs/containers_config/test-xuxuebiao | python -m json.tool
 $ ls  /tmp/Logs/JFDocker.log
 
 $ tail -n 3 /tmp/Logs/JFDocker.log
-time="2017-12-19T12:29:58+08:00" level=info msg="Succeeded to create pause container for test-xuxuebiao" data=9587a3978adcea077f7ba4ff3a61bd5ef62ff40c79bcc709039d557fa390f56d
+time="2017-12-19T12:29:58+08:00" level=info msg="Successful to create pause container for test-xuxuebiao" data=9587a3978adcea077f7ba4ff3a61bd5ef62ff40c79bcc709039d557fa390f56d
 time="2017-12-19T12:29:58+08:00" level=info msg="Creating the app container test-xuxuebiao" data=....
-time="2017-12-19T12:29:59+08:00" level=info msg="Succeeded to create app container for test-xuxuebiao" data=cf87e67033a470356c2a22a12e30ce5e9ef16b43f860d561c3d8a442ae2f8543
+time="2017-12-19T12:29:59+08:00" level=info msg="Successful to create app container for test-xuxuebiao" data=cf87e67033a470356c2a22a12e30ce5e9ef16b43f860d561c3d8a442ae2f8543
 ```
 
 #### update docker with spec image

@@ -29,7 +29,7 @@ func JFDockerRun(args string) (*apis.RspJFDocker, error) {
     runconf := "runConf"+argslist[3]
     Logger("JFDocker run args are storing to the "+runconf,args)
     if RunConfErr := WriteToConf(runconf,args); RunConfErr == nil {
-        Logger("Succeeded store the JFDocker run args",args)
+        Logger("Successful store the JFDocker run args",args)
     }
 
 
@@ -49,7 +49,7 @@ func JFDockerRun(args string) (*apis.RspJFDocker, error) {
     //JFDocker container详细信息参数落地存储
     //fmt.Printf("标准的json串:%s\n",b)
     if ConDataInfoErr := WriteToConf(container.Appname,string(b)) ;ConDataInfoErr == nil {
-        Logger("Succeeded store the Container data info:"+container.Appname,string(b))
+        Logger("Successful store the Container data info:"+container.Appname,string(b))
     }
 
     //JFDocker 容器规格信息参数落地存储
@@ -57,7 +57,7 @@ func JFDockerRun(args string) (*apis.RspJFDocker, error) {
     if conspecdata,err := json.Marshal(conspec);err == nil {
         conconf := "ConSpec"+container.Appname
         if ConSpecErr := WriteToConf(conconf,string(conspecdata)); ConSpecErr == nil {
-            Logger("Succeeded store the Container Spec info:"+container.Appname,string(conspecdata))
+            Logger("Successful store the Container Spec info:"+container.Appname,string(conspecdata))
         }
     } else { log.Fatalf("Failed to write the conspec file",err.Error()) }
 
@@ -77,7 +77,7 @@ func JFDockerRun(args string) (*apis.RspJFDocker, error) {
     } 
     //创建pause容器成功
     //fmt.Println("pause 容器创建成功"+pauseid)
-    Logger("Succeeded to create pause container for "+container.Appname,pauseid)
+    Logger("Successful to create pause container for "+container.Appname,pauseid)
     Logger("Creating the app container "+container.Appname,"....")
 
    
@@ -93,7 +93,7 @@ func JFDockerRun(args string) (*apis.RspJFDocker, error) {
         */
     }
     //fmt.Printf("应用容器:%s 创建成功,容器id为:%s",container.Appname,appcid)
-    Logger("Succeeded to create app container for "+container.Appname,appcid)
+    Logger("Successful to create app container for "+container.Appname,appcid)
  
     //构造响应
     data.Result = 0
@@ -136,13 +136,13 @@ func JFDockerUpdate(args string) (*apis.JFDocker,error) {
     //容器镜像更新成功
     s,c := UpdateAppc(name,image,cpus,mems)
     if s == "ok" {
-        Logger("Succeeded to update the appcontainer:"+name+" with image:"+image,"容器id:"+c)
+        Logger("Successful to update the appcontainer:"+name+" with image:"+image,"容器id:"+c)
     }
   
     Logger("Updating  the Runconf","...")
     runConf := "runConf"+name
     if RunConferr := WriteToConf(runConf,newargs);RunConferr == nil {
-        Logger("Succeeded to update the runConf for container "+name,"")
+        Logger("Successful to update the runConf for container "+name,"")
     }
     Logger("Updating the container conf","...")
     b,err := json.Marshal(data) 
@@ -152,7 +152,7 @@ func JFDockerUpdate(args string) (*apis.JFDocker,error) {
     fmt.Println(string(b))
     //这里写这个string(b)数据的时候可能造成数据写入不正确，不能直接清空之前的内容进行重写
     if ConDataInfoErr := WriteToConf(name,string(b)) ;ConDataInfoErr == nil {
-        Logger("Succeeded to update the container data info:"+name,string(b))
+        Logger("Successful to update the container data info:"+name,string(b))
     }
     
     

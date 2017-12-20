@@ -124,7 +124,7 @@ func main() {
         result,err := clients.JFDockerUpdate(JFDockerArgs)
         if err != nil { os.Exit(2) }
         if data,err := json.Marshal(result); err == nil {
-            clients.Logger("Succeeded to update the app container with JFDockerUpdate",string(data))
+            clients.Logger("Successful to update the app container with JFDockerUpdate",string(data))
         }
 
     } else if JFDockertype == "delete" {

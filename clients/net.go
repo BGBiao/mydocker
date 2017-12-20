@@ -58,7 +58,7 @@ func AttachNet(netns,containerid,ip,mask,gw,vnet string) (*apis.Netns, error) {
             //fmt.Println("netlink creation failure:"+err.Error())
             //os.Exit(1)
         }
-        Logger("Succeeded to create the netlink",netpath)
+        Logger("Successful to create the netlink",netpath)
     }
 
     //创建网络命名空间,并创建相关的容器网络
@@ -73,7 +73,7 @@ func AttachNet(netns,containerid,ip,mask,gw,vnet string) (*apis.Netns, error) {
         //os.Exit(1)
     }
     //fmt.Println(string(out))
-    Logger("Succeeded to create net pairs",string(out))
+    Logger("Successful to create net pairs",string(out))
 
 
     netbr,err := exec.Command("/bin/bash","-c",`brctl addif `+vnet+` `+hveth).Output()
@@ -85,7 +85,7 @@ func AttachNet(netns,containerid,ip,mask,gw,vnet string) (*apis.Netns, error) {
         //os.Exit(1)
     }
     //fmt.Println(string(netbr))
-    Logger("Succeeded to create bridge interface ",string(netbr))
+    Logger("Successful to create bridge interface ",string(netbr))
 
     netup,err := exec.Command("/bin/bash","-c",`ip link set `+hveth+` up`).Output()
     if err != nil {
@@ -95,7 +95,7 @@ func AttachNet(netns,containerid,ip,mask,gw,vnet string) (*apis.Netns, error) {
        // fmt.Printf("ip link set %s up failed!\n",hveth)
        // os.Exit(1)
     }
-    Logger("Succeeded to up the vnet",string(netup))
+    Logger("Successful to up the vnet",string(netup))
     //fmt.Println(string(netup))
 
 
@@ -108,7 +108,7 @@ func AttachNet(netns,containerid,ip,mask,gw,vnet string) (*apis.Netns, error) {
        // fmt.Printf("ip link set eth0%s netns %s failed!\n",hveth,pid)
        // os.Exit(1)
     }
-    Logger("Succeeded to create the relation",string(netlink))
+    Logger("Successful to create the relation",string(netlink))
     //fmt.Println(string(netlink))
 
 
@@ -120,7 +120,7 @@ func AttachNet(netns,containerid,ip,mask,gw,vnet string) (*apis.Netns, error) {
        // fmt.Printf("ip netns exec %s ip link set eth0%s up failed!\n",pid,hveth)
        // os.Exit(1)
     }
-    Logger("Succeeded to set up the container net dev",string(netdevup))
+    Logger("Successful to set up the container net dev",string(netdevup))
     //fmt.Println(string(netdevup))
 
     netip,err := exec.Command("/bin/bash","-c",`ip netns exec `+pid+` ip addr add `+ip+`/`+mask+` dev eth0`+hveth).Output()
@@ -131,7 +131,7 @@ func AttachNet(netns,containerid,ip,mask,gw,vnet string) (*apis.Netns, error) {
        // fmt.Printf("ip netns exec %s ip addr add %s/%s dev eth0 failed!\n",pid,ip,mask)
        // os.Exit(1)
     }
-    Logger("Succeeded to setup the container ip",string(netip))
+    Logger("Successful to setup the container ip",string(netip))
     //fmt.Println(string(netip))
 
     netgw,err := exec.Command("/bin/bash","-c",`ip netns exec `+pid+` ip route add default via `+gw).Output()
@@ -142,7 +142,7 @@ func AttachNet(netns,containerid,ip,mask,gw,vnet string) (*apis.Netns, error) {
         //fmt.Printf("ip netns exec %s ip route add default via %s fialed!\n",pid,gw)
         //os.Exit(1)
     }
-    Logger("Succeeded to setup the container gateway",string(netgw))
+    Logger("Successful to setup the container gateway",string(netgw))
     //fmt.Println(string(netgw))
     
     //构造网络相关返回信息
@@ -187,6 +187,12 @@ func DetachNet(pauseid,ip,mask string) error {
     }
     
     Logger("Successful to detach  a virtual net device  for pause container:"+pauseid,string(delvdev))
+
+    //删除pause容器网络的netns "/var/run/netns/$pid"
+    testNetlink := apis.Netnamespace+pid
+    if removeErr := os.Remove(testNetlink);removeErr == nil {
+        Logger("Successful to unlink the netns. ",testNetlink)
+    } else { log.Fatalf("Failed to unlink the netns ",testNetlink) }
 
     return nil
     

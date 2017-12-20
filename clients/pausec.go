@@ -36,7 +36,7 @@ func Pausec(name,ip,mask,gw,vnet string) (pauseid string,err error) {
           if result,err := json.Marshal(netresult) ;err == nil {
               //容器网络装配成功，打印pause容器相关基本信息
               //fmt.Println("pause容器网络基本信息:"+string(result))
-              Logger("Succeeded to create network for pause container",string(result)) 
+              Logger("Successful to create network for pause container",string(result)) 
           } else {
               log.Fatalf("Failed to json pause container network conf",err.Error())
               //fmt.Println("pause容器网络信息解析失败:"+err.Error())
@@ -69,14 +69,15 @@ func DelPausec(pauseid,appname string) {
     ip := argslist[4]
     mask := argslist[5]
 
-    //获取网络信息进行pause容器的销毁
+    //摘除pause容器网络
     delNetErr := DetachNet(pauseid,ip,mask)
     if delNetErr != nil { log.Fatalf("Failed to detach net",err.Error()) }  
-
+    //销毁pause容器(其实网络摘取之后pause容器销毁可以不用)
     pausecontainer,err := exec.Command("/bin/bash","-c",`docker stop `+pauseid+` && docker rm -f -v `+pauseid).Output()
     if err != nil { log.Fatalf("Failed to remove pause container",err.Error()) }  
     Logger("Successful to detach and delete pause container:"+appname,string(pausecontainer))
-
+    
+    
     Logger("Waiting to delete some conf",appname)
 
     if conSpecConfErr := os.Remove(path+conSpecConf); conSpecConfErr == nil {
