@@ -37,7 +37,8 @@ func JFDockerRun(args string) (*apis.RspJFDocker, error) {
     container := apis.JFDocker{}
     container.Appname = argslist[3]
     container.Image = argslist[2]
-    container.Conspec = apis.ConSpec{argslist[0],argslist[1],argslist[8],argslist[7]}
+    //container.Conspec = apis.ConSpec{argslist[0],argslist[1],argslist[8],argslist[7]}
+    container.Conspec = apis.ConSpec{ Ywid : argslist[0], SN : argslist[1], Mem : argslist[8],Cpus : argslist[7]}
     container.Netspec = apis.NetSpec{argslist[4],argslist[5],argslist[6],argslist[10]}
 
     //b as a []byte
@@ -53,7 +54,8 @@ func JFDockerRun(args string) (*apis.RspJFDocker, error) {
     }
 
     //JFDocker 容器规格信息参数落地存储
-    conspec := apis.ConSpec{argslist[0],argslist[1],argslist[8],argslist[7]}
+    //conspec := apis.ConSpec{argslist[0],argslist[1],argslist[8],argslist[7]}
+    conspec := &container.Conspec 
     if conspecdata,err := json.Marshal(conspec);err == nil {
         conconf := "ConSpec"+container.Appname
         if ConSpecErr := WriteToConf(conconf,string(conspecdata)); ConSpecErr == nil {
@@ -80,7 +82,7 @@ func JFDockerRun(args string) (*apis.RspJFDocker, error) {
     Logger("Successful to create pause container for "+container.Appname,pauseid)
     Logger("Creating the app container "+container.Appname,"....")
 
-   
+    fmt.Println(pauseid,container.Appname,container.Image,container.Conspec.Cpus,container.Conspec.Mem) 
     //根据pause容器id进行创建业务容器appcon
     //func Appc(pauseid,name,appimage,cpus,mems string)  (appcid string,err error)
 
@@ -234,4 +236,122 @@ func JFDockerRebuilt(args string) error {
     return nil
 }
 
-    
+
+func JFDockerRunGpu(args string) (*apis.RspJFDocker, error) {
+    data := apis.RspJFDocker{}
+    argslist := strings.Split(args,",")
+    //[YW-D-TPBQD2@af41f7 4Y8K742@af41f7 172.25.46.9:5001/centos6.8-jdjr-test-app 172.25.47.21.h.chinabank.com.cn 172.25.47.21 24 172.25.47.254 2 4096m 20007772 br0]YW-D-TPBQD2@af41f7 4Y8K742@af41f7 172.25.46.9:5001/centos6.8-jdjr-test-app 172.25.47.21.h.chinabank.com.cn 172.25.47.21 24 172.25.47.254 2 4096m 20007772 br0 4}
+    if len(argslist) != 12 {
+        log.Fatalf("The JFDocker rungpu args have some error,please check it",string(args))
+    }
+    //runConf+name
+    runconf := "runConf"+argslist[3]
+    Logger("JFDocker run args are storing to the "+runconf,args)
+    if RunConfErr := WriteToConf(runconf,args); RunConfErr == nil {
+        Logger("Successful store the JFDocker run args",args)
+    }
+
+    container := apis.JFDocker{}
+    container.Appname = argslist[3]
+    container.Image = argslist[2]
+    container.Conspec = apis.ConSpec{argslist[0],argslist[1],argslist[8],argslist[7],argslist[11]}
+    container.Netspec = apis.NetSpec{argslist[4],argslist[5],argslist[6],argslist[10]}
+
+    b,err := json.Marshal(container)
+    if err != nil {
+        log.Fatalf("Failed to json the container datainfo",err.Error())
+    }
+    //container sepc conf
+    if ConDataInfoErr := WriteToConf(container.Appname,string(b)) ;ConDataInfoErr == nil {
+        Logger("Successful store the Container data info:"+container.Appname,string(b))
+    }
+
+    //ConSpec+name
+    conspec := &container.Conspec
+    if conspecdata,err := json.Marshal(conspec);err == nil {
+        conconf := "ConSpec"+container.Appname
+        if ConSpecErr := WriteToConf(conconf,string(conspecdata)); ConSpecErr == nil {
+            Logger("Successful store the Container Spec info:"+container.Appname,string(conspecdata))
+        }
+    } else { log.Fatalf("Failed to write the conspec file",err.Error())  }
+
+    fmt.Printf("ip:%s mask:%s gw:%s vnet:%s\n",container.Netspec.Ipv4,container.Netspec.Mask,container.Netspec.Gateway,container.Netspec.Vnet)
+
+    //创建pause容器
+    pauseid,err := Pausec(container.Appname,container.Netspec.Ipv4,container.Netspec.Mask,container.Netspec.Gateway,container.Netspec.Vnet) 
+    if err != nil {
+          log.Fatalf("Failed to run the pausecontainer",err.Error())
+    }
+
+    Logger("Successful to create pause container for "+container.Appname,pauseid)
+    Logger("Creating the GPU app container "+container.Appname,"....")
+    Logger("gpu args"+pauseid+" "+container.Appname+" "+container.Image+"  "+container.Conspec.Cpus+" "+container.Conspec.Mem+" ",container.Conspec.Gpus)
+
+    //创建GPU应用容器
+    appcid,err := RunGpuAppc(pauseid,container.Appname,container.Image,container.Conspec.Cpus,container.Conspec.Mem,container.Conspec.Gpus)
+    if err != nil {
+	fmt.Println("应用容器创建失败:"+err.Error())
+	os.Exit(1)
+    }
+    fmt.Println(container.Appname,appcid)	
+    return &data,nil
+} 
+
+func JFDockerUpdateGpu(args string) (*apis.JFDocker,error) {
+    data := apis.JFDocker{}
+    argslist := strings.Split(args,",")
+    if len(argslist) != 2 {
+        log.Fatalf("The JFDocker update args have some error",apis.Usages)
+    }
+
+    name := argslist[0]
+    image := argslist[1]
+    ConConfContent,err := ReadFromConf(name)
+    if err != nil { os.Exit(1) }
+    ConData := []byte(ConConfContent)
+    ConInfoErr := json.Unmarshal(ConData,&data)
+    if ConInfoErr != nil { os.Exit(2) }
+    data.Image = image
+    cpus := data.Conspec.Cpus
+    mems := data.Conspec.Mem
+    gpus := data.Conspec.Gpus
+
+    newargs := string(data.Conspec.Ywid)+","+string(data.Conspec.SN)+","+string(data.Image)+","+string(data.Appname)+","+string(data.Netspec.Ipv4)+","+string(data.Netspec.Mask)+","+string(data.Netspec.Gateway)+","+string(data.Conspec.Cpus)+","+string(data.Conspec.Mem)+",1232123,"+string(data.Netspec.Vnet)+","+string(data.Conspec.Gpus)
+    fmt.Println(newargs)
+
+    //update gpu container with gpu image
+    s,c := UpdateGpuAppc(name,image,cpus,mems,gpus)
+    if s == "ok" {
+	Logger("Successful to update the appcontainer:"+name+" with image:"+image,"容器id:"+c)
+    }
+
+    Logger("Updating  the Runconf","...")
+    runConf := "runConf"+name
+    if RunConferr := WriteToConf(runConf,newargs);RunConferr == nil {
+	Logger("Successful to update the runConf for gpu container "+name,"")
+    }
+
+    Logger("Updating the container conf","...")
+    b,err := json.Marshal(data)
+    if err != nil { log.Fatalf("Failed to update the container datainfo",err.Error()) }
+    fmt.Println(string(b))
+    if ConDataInfoErr := WriteToConf(name,string(b)) ;ConDataInfoErr == nil {
+	Logger("Successful to update the container data info:"+name,string(b))
+    }
+    return &data,nil
+}
+
+
+func JFDockerDeleteGpu(args string) (*apis.RspJFDocker,error) {
+    delData := apis.RspJFDocker{}
+    argslist := strings.Split(args,",")
+    if len(argslist) != 1 { log.Fatalf("The JFDocker deletegpu args have some error,pleace check it",apis.Usages) }
+    delData.Appname = argslist[0]
+    netmode,err := exec.Command("/bin/bash","-c",`docker inspect -f "{{.HostConfig.NetworkMode}}" `+delData.Appname).Output();
+    if err != nil { log.Fatalf("Failed to get the pauseid,please check it",err.Error()) }
+    pauseid := strings.Replace(strings.Split(string(netmode),":")[1],"\n","",-1)
+    status,_ := DelAppc(delData.Appname)
+    if status == "ok" { Logger("Successful to delete the gpu app container",delData.Appname) }
+    DelPausec(pauseid,delData.Appname)
+    return &delData,nil
+}

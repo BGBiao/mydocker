@@ -11,7 +11,7 @@ import (
     log "github.com/sirupsen/logrus"
 )
 
-var Usage string
+//var Usage string
 
 //init函数当前用来初始化相关的目录结构
 func init() {
@@ -41,18 +41,19 @@ func init() {
 }
 
 func main() {
-    Usage = os.Args[0]+" run ywid,sn,image,container,ip,mask,gateway,cpu,mem,label,vnet\n"+os.Args[0]+" update container,images\n"+os.Args[0]+" resize container,cpu,4/container,mem,2048\n"+os.Args[0]+" delete container\n"+os.Args[0]+" rebuilt container"
+    //Usage = os.Args[0]+" run ywid,sn,image,container,ip,mask,gateway,cpu,mem,label,vnet\n"+os.Args[0]+" rungpu ywid,sn,image,container,ip,mask,gateway,cpu,mem,label,vnet,gpus\n"+os.Args[0]+" update container,images\n"+os.Args[0]+" resize container,cpu,4/container,mem,2048\n"+os.Args[0]+" delete container\n"+os.Args[0]+" rebuilt container"
 
     //获取JFDocker所有的参数
     args := os.Args
     
     if len(args) == 1 {
-        fmt.Println(Usage)
+        fmt.Println(apis.Usages)
         os.Exit(1)
     }
 
     /*每个操作类型需要执行的参数:
     JFDocker run YW-D-TPBQD2@af41f7,4Y8K742@af41f7,172.25.46.9:5001/centos6.8-jdjr-test-app,172.25.47.21.h.chinabank.com.cn,172.25.47.21,24,172.25.47.254,2,4096m,20007772,br0
+    JFDocker rungpu YW-D-TPBQD2@af41f7,4Y8K742@af41f7,172.25.46.9:5001/centos6.8-jdjr-test-app,172.25.47.21.h.chinabank.com.cn,172.25.47.21,24,172.25.47.254,2,4096m,20007772,br0,2
     JFDocker update appname,imagername
     JFDocker resize appname,cpu,4
     JFDocker delete appname
@@ -96,24 +97,6 @@ func main() {
             fmt.Println(string(data))
         }
 
-/*
-        //本身上层接口返回的是interface接口类型，可以直接返回相关的数据，如果需要重新构造可以再次初始化结构体接口
-        out := apis.RspJFDocker{}
-        //问题:无法解析Result中的内容
-        out.Result = result.Result
-        out.Appname = result.Appname
-        out.Ipv4 = result.Ipv4
-        out.ConID = result.ConID
-
-        data, err := json.MarshalIndent(out, "", "    ")
-        if err != nil{
-            fmt.Println(err)
-            return
-        }
-        fmt.Printf(fmt.Sprintf("%s", data))
-        
-*/
-
     } else if JFDockertype == "resize" {
         fmt.Println("Resize  the docker container's cpu or mem ")
         clients.JFDockerResize(JFDockerArgs)
@@ -143,10 +126,28 @@ func main() {
         if rebuiltErr := clients.JFDockerRebuilt(JFDockerArgs); rebuiltErr == nil {
             clients.Logger("Rebuilt container done!","")
         }
-
+    } else if JFDockertype == "rungpu" {
+        clients.Logger("============Start the JFDockerRunGpu============",JFDockerArgs)
+        result,err := clients.JFDockerRunGpu(JFDockerArgs)
+        if err != nil {
+            log.Fatalf("Failed to rungpu",err.Error())
+        }
+        clients.Logger("============End the JFDockerRunGpu============","")
+        if data,err := json.MarshalIndent(result,"","  "); err == nil {
+            fmt.Println(string(data))
+        }
+    
+   } else if JFDockertype == "updategpu" {
+	clients.Logger("============Start the JFDockerUpdateGpu============",JFDockerArgs)
+	result,err := clients.JFDockerUpdateGpu(JFDockerArgs)
+	if err != nil { log.Fatalf("Failed to rungpu",err.Error()) }
+	clients.Logger("============End the JFDockerRunGpu============","")
+	if data,err := json.Marshal(result); err == nil {
+    		clients.Logger("Successful to update the gpu app container with JFDockerUpdateGpu",string(data))
+	}
     } else {
         fmt.Println("The operations has no opstype,please check it!")
-        fmt.Println(Usage)
+        fmt.Println(apis.Usages)
     }
 
 }

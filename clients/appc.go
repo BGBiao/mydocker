@@ -5,6 +5,7 @@ import (
     "os/exec"
     "fmt"
     "strings"
+    "strconv"
     "github.com/xxbandy/mydocker/apis"
     log "github.com/sirupsen/logrus"
 
@@ -116,6 +117,64 @@ func ResizeAppc(name,resizetype,resizevalue string) {
 
 }
 
+func RunGpuAppc(pauseid,name,appimage,cpus,mems,alloc_cnt string)  (appcid string,err error) {
+	var (
+		alloc_gpus_id string		//分配的gpu卡id
+		alloc_gpus int			//分配的gpu卡个数
+	)
+	cpushares,cpuquota := Cpuget(cpus)	//获取CPU的share 和quota
+
+	//转换gpu数量为int型 alloc_gpus
+	if num,err := strconv.Atoi(alloc_cnt); err == nil {
+		alloc_gpus = num
+	}
+	//获取当前已经在使用的GPU卡设备id
+	used_ids := GetUsedGpu()
+	//获取分配的GPU卡id信息[0 2] [4 5 6 7]
+	allocGpu := GetFreeGpus(alloc_gpus,used_ids)
+	//构造一个可以直接传入nvidia-docker的GPU卡id:0,2  or 4,5,6,7
+	for i := 0;i<len(allocGpu);i++ {
+		alloc_gpus_id = alloc_gpus_id+","+allocGpu[i]
+
+	}
+	fmt.Println(alloc_gpus_id,cpushares,cpuquota)
+
+	var appconid string
+	//conspecconf := apis.LogPath+apis.ConConfDir+"/ConSpec"+name
+	//后期是否需要挂载配置文件
+        //fmt.Println(NV_GPU="+alloc_gpus_id+" nvidia-docker run -itd  --name  "+name+" --net=container:"+pauseid+" --ipc=container:"+pauseid+" -m "+mems+" --cpu-shares "+cpushares+" --cpu-quota "+cpuquota+" --cpu-period 100000 -p 80:5000 "+appimage)
+    	if appcid,err := exec.Command("/bin/bash","-c",`NV_GPU=`+alloc_gpus_id+` nvidia-docker run -itd  --name  `+name+` --net=container:`+pauseid+` --ipc=container:`+pauseid+` -m `+mems+` --cpu-shares `+cpushares+` --cpu-quota `+cpuquota+` --cpu-period 100000  `+appimage).Output(); err == nil {
+		appconid = strings.Replace(string(appcid),"\n","",-1)
+    	} else {
+		fmt.Println("appcontainer 创建失败，请检查容器参数"+err.Error())
+		fmt.Println(string(appcid))
+       		os.Exit(1)
+   	 }
+
+	return appconid,nil
+
+}
 
 
+
+func UpdateGpuAppc(name,image,cpus,mems,gpus string) (stat,appc string) {
+	var pauseid,status,appcon string
+	if out,err := exec.Command("/bin/bash","-c",`docker inspect -f "{{.HostConfig.NetworkMode}}" `+name).Output(); err == nil {
+		pauseid = strings.Split(strings.Split(string(out),"\n")[0],":")[1]
+	} else {
+		log.Fatalf("Failed to get the pause container id",err.Error())
+	}
+
+	if stat,_ := DelAppc(name); stat == "ok" {
+		Logger("The gpu container of lastimage has been delete",name)
+		name,err := RunGpuAppc(pauseid,name,image,cpus,mems,gpus)
+		if err != nil { log.Fatalf("The container of newimage run failed,please check it ",err.Error()) }
+ 		status = "ok"
+		appcon = name
+		Logger("The gpu container of newimage has been created",appcon)
+	} else {
+		log.Fatalf("The container of lastimage delete failed","check it")
+	}
+	return status,appcon
+}
 

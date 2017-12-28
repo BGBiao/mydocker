@@ -39,8 +39,7 @@ func AttachNet(netns,containerid,ip,mask,gw,vnet string) (*apis.Netns, error) {
             fmt.Printf("%s creation failure: %s",netns,fileerr.Error())
             os.Exit(1)
         }
-    }
-    Logger("Linux net namespace path exist",netfile.Name())
+    } else {Logger("Linux net namespace path exist",netfile.Name())}
     //fmt.Println(netfile.Name()) //netfile是一个Filepath结构体
 
 
