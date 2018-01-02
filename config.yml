@@ -1,0 +1,3 @@
+logpath: /export/Logs/
+configdig: containers_config
+pauseimage: f66f4bd9b894

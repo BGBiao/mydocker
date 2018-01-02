@@ -69,7 +69,7 @@ func main() {
     //JFDocker run操作
     if JFDockertype == "run" {
         //开始运行JFDocker run
-        clients.Logger("<JFDockerRun:解析并进行容器创建操作",JFDockerArgs)
+        clients.Logger("============Start the JFDockerRun============",JFDockerArgs)
         
         //JFDockerRun(args)将传run操作的所有参数解析并进行容器创建，最终返回容器对象的结构体RspJFDocker
         result,err := clients.JFDockerRun(JFDockerArgs)
@@ -92,39 +92,45 @@ func main() {
             }
             os.Exit(1)
         }
-
+        clients.Logger("============End the JFDockerRun============","")
         if data,err := json.MarshalIndent(result,"","  "); err == nil {
             fmt.Println(string(data))
         }
 
     } else if JFDockertype == "resize" {
         fmt.Println("Resize  the docker container's cpu or mem ")
+        clients.Logger("============Start the JFDockerResize============",JFDockerArgs)
         clients.JFDockerResize(JFDockerArgs)
+        clients.Logger("============End the JFDockerUpdate============","")
     } else if JFDockertype == "update" {
         //使用新镜像更新容器内容
-        clients.Logger("<JFDockerUpdate:解析参数并进行容器更新",JFDockerArgs) 
         //func JFDockerUpdate(args string) (*apis.JFDocker,error) 
+        clients.Logger("============Start the JFDockerUpdate============",JFDockerArgs)
         result,err := clients.JFDockerUpdate(JFDockerArgs)
         if err != nil { os.Exit(2) }
         if data,err := json.Marshal(result); err == nil {
             clients.Logger("Successful to update the app container with JFDockerUpdate",string(data))
         }
+        clients.Logger("============End the JFDockerUpdate============","")
 
     } else if JFDockertype == "delete" {
         //删除容器相关的信息 
         //JFDocker delete appname 
-       
+        clients.Logger("============Start the JFDockerDelete============",JFDockerArgs)
         result,err := clients.JFDockerDelete(JFDockerArgs)
         if err != nil {
             log.Fatalf("Failed to delete the container","")
         }
+        clients.Logger("============End the JFDockerDelete============","")
         if data,err := json.MarshalIndent(result,"","  "); err == nil {
             fmt.Println(string(data))
         }
     } else if JFDockertype == "rebuilt" {
         //rebuilt container appcontainer
+        clients.Logger("============Start the JFDockerRebuilt============",JFDockerArgs)
         if rebuiltErr := clients.JFDockerRebuilt(JFDockerArgs); rebuiltErr == nil {
             clients.Logger("Rebuilt container done!","")
+            clients.Logger("============End the JFDockerRebuilt============","")
         }
     } else if JFDockertype == "rungpu" {
         clients.Logger("============Start the JFDockerRunGpu============",JFDockerArgs)
