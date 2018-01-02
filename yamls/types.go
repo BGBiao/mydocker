@@ -1,9 +1,10 @@
-package apis
+package yamls
+
 import (
-    "os"
     "gopkg.in/yaml.v2"
-    "fmt"
     "io/ioutil"
+		"os"
+    "fmt"
 )
 
 type ConfEnv struct {
@@ -16,7 +17,7 @@ const config string = "/etc/JFDocker/config.yml"
 var LogPath,ConConfDir,Pauseimage string
 
 func init() {
-                if _,err := os.Stat(config); err == nil {
+		if _,err := os.Stat(config); err == nil {
         content,_ := ioutil.ReadFile(config)
         env := ConfEnv{}
         if err := yaml.Unmarshal(content, &env);err == nil {
@@ -30,6 +31,7 @@ func init() {
         Pauseimage  = "xxbandy123/k8s-pause"
     }
 }
+
 /*
 //注意LogPath必须以/结尾
 const LogPath string = "/tmp/Logs/"
@@ -37,8 +39,14 @@ const ConConfDir string = "containers_config"
 const Pauseimage string = "xxbandy123/k8s-pause"
 */
 
+
+
+
+
+
 const Netnamespace string = "/var/run/netns/"
 
+//const Usages string = "JFDocker run ywid,sn,image,container,ip,mask,gateway,cpu,mem,label,vnet\n JFDocker rungpu ywid,sn,image,container,ip,mask,gateway,cpu,mem,label,vnet,gpus\nJFDocker update container,images\n JFDocker resize container,cpu,4/container,mem,2048\n JFDocker delete container\n JFDocker  rebuilt container"
 
 const Usages string = `Usage:
     JFDocker run ywid,sn,image,container,ip,mask,gateway,cpu,mem,label,vnet
