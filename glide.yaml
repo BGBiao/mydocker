@@ -1,8 +1,5 @@
-package: .
+package: github.com/xxbandy/mydocker
 import:
 - package: github.com/sirupsen/logrus
 - package: github.com/urfave/cli
-- package: github.com/xxbandy/mydocker
-  subpackages:
-  - apis
-  - clients
+- package: gopkg.in/yaml.v2
