@@ -1,9 +1,10 @@
 package clients
+
 import (
-    "os"
-    "io/ioutil"
-    log "github.com/sirupsen/logrus"
-    "github.com/xxbandy/mydocker/apis"
+	log "github.com/sirupsen/logrus"
+	"github.com/xxbandy/mydocker/apis"
+	"io/ioutil"
+	"os"
 )
 
 //编写容器运行时配置文件
@@ -25,30 +26,26 @@ bufio.ReadString
 
 //write and read runConfname and container_name
 //name: runConfname
-func WriteToConf(name,content string) (err error){
-    fileObj,err := os.OpenFile(apis.LogPath+apis.ConConfDir+"/"+name,os.O_CREATE|os.O_WRONLY|os.O_TRUNC,0644)
-    if err != nil {
-        log.Fatalf("Failed to write ContainerRunConf:",err.Error())
-    }
+func WriteToConf(name, content string) (err error) {
+	fileObj, err := os.OpenFile(apis.LogPath+apis.ConConfDir+"/"+name, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		log.Fatalf("Failed to write ContainerRunConf:", err.Error())
+	}
 
-    _,WriteErr := fileObj.WriteString(content)
-    if WriteErr != nil {
-        log.Fatalf("Failed to write the ConRunConf "+apis.LogPath+apis.ConConfDir+"/"+name+" :",err.Error())
-    }
-    defer fileObj.Close()
-    return WriteErr
+	_, WriteErr := fileObj.WriteString(content)
+	if WriteErr != nil {
+		log.Fatalf("Failed to write the ConRunConf "+apis.LogPath+apis.ConConfDir+"/"+name+" :", err.Error())
+	}
+	defer fileObj.Close()
+	return WriteErr
 }
 
-
-func ReadFromConf(name string) (runargs string,err error) {
-    var args string
-    content, err := ioutil.ReadFile(apis.LogPath+apis.ConConfDir+"/"+name)
-    if err != nil {
-        log.Fatalf("Failed to read ContainerRunConf: "+apis.LogPath+apis.ConConfDir+"/"+name,err.Error())
-    }
-    args = string(content)
-    return args,err
+func ReadFromConf(name string) (runargs string, err error) {
+	var args string
+	content, err := ioutil.ReadFile(apis.LogPath + apis.ConConfDir + "/" + name)
+	if err != nil {
+		log.Fatalf("Failed to read ContainerRunConf: "+apis.LogPath+apis.ConConfDir+"/"+name, err.Error())
+	}
+	args = string(content)
+	return args, err
 }
-
-
-
