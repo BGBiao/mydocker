@@ -34,7 +34,9 @@ func Appc(pauseid, name, appimage, cpus, mems string) (appcid string, err error)
 	conspecconf := apis.LogPath + apis.ConConfDir + "/ConSpec" + name
 	//注意:由于直接使用了exec.Command().Output() 因此命令执行过程中不能输出详细的错误信息
 	//在docker中--hostname和当前--net=container:cid 不能共用.因此当前不能手工设置容器内部的容器名
-	if appcid, err := exec.Command("/bin/bash", "-c", `docker run -itd --name `+name+` -v `+conspecconf+`:/root/config_info --net=container:`+pauseid+` --ipc=container:`+pauseid+` -m `+mems+` --cpu-shares `+cpushares+` --cpu-quota `+cpuquota+` --cpu-period 100000 `+appimage).Output(); err == nil {
+  //-v ConSpecConf:/export/config_info 
+  //-v /data/biao:/data(a cephfs)
+	if appcid, err := exec.Command("/bin/bash", "-c", `docker run -itd --name `+name+` -v `+conspecconf+`:/export/config_info  -v `+apis.DataPath+name+`:/data --net=container:`+pauseid+` --ipc=container:`+pauseid+` -m `+mems+` --cpu-shares `+cpushares+` --cpu-quota `+cpuquota+` --cpu-period 100000 `+appimage).Output(); err == nil {
 		appconid = strings.Replace(string(appcid), "\n", "", -1)
 	} else {
 		fmt.Println("appcontainer 创建失败，请检查容器参数" + err.Error())
@@ -139,6 +141,7 @@ func RunGpuAppc(pauseid, name, appimage, cpus, mems, alloc_cnt string) (appcid s
 	var appconid string
 	//conspecconf := apis.LogPath+apis.ConConfDir+"/ConSpec"+name
 	//后期是否需要挂载配置文件
+  // 挂载CephFS相关目录，需要在-v apis.DataPath+name:/data
 	//fmt.Println(NV_GPU="+alloc_gpus_id+" nvidia-docker run -itd  --name  "+name+" --net=container:"+pauseid+" --ipc=container:"+pauseid+" -m "+mems+" --cpu-shares "+cpushares+" --cpu-quota "+cpuquota+" --cpu-period 100000 -p 80:5000 "+appimage)
 	if appcid, err := exec.Command("/bin/bash", "-c", `NV_GPU=`+alloc_gpus_id+` nvidia-docker run -itd  --name  `+name+` --net=container:`+pauseid+` --ipc=container:`+pauseid+` -m `+mems+` --cpu-shares `+cpushares+` --cpu-quota `+cpuquota+` --cpu-period 100000  `+appimage).Output(); err == nil {
 		appconid = strings.Replace(string(appcid), "\n", "", -1)

@@ -11,11 +11,12 @@ type ConfEnv struct {
 	Logpath    string `yaml:"logpath"`
 	Conconfdir string `yaml:"configdir"`
 	Pauseimage string `yaml:"pauseimage"`
+	DataPath   string `yaml:"datapath,omitempty"`
 }
 
 const config string = "/etc/JFDocker/config.yml"
 
-var LogPath, ConConfDir, Pauseimage string
+var LogPath, ConConfDir, Pauseimage, DataPath string
 
 func init() {
 	if _, err := os.Stat(config); err == nil {
@@ -25,6 +26,7 @@ func init() {
 			LogPath = env.Logpath
 			ConConfDir = env.Conconfdir
 			Pauseimage = env.Pauseimage
+			DataPath = env.DataPath
 		} else {
 			fmt.Println("配置文件有误，使用默认配置")
 		}
@@ -32,6 +34,7 @@ func init() {
 		LogPath = "/tmp/Logs/"
 		ConConfDir = "containers_config"
 		Pauseimage = "xxbandy123/k8s-pause"
+		DataPath = "/export/"
 	}
 }
 

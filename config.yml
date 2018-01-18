@@ -1,3 +1,4 @@
 logpath: /export/Logs/
-configdig: containers_config
+configdir: containers_config
 pauseimage: f66f4bd9b894
+datapath: /data/

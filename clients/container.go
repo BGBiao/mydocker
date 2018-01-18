@@ -40,6 +40,16 @@ func JFDockerRun(args string) (*apis.RspJFDocker, error) {
 	container.Conspec = apis.ConSpec{Ywid: argslist[0], SN: argslist[1], Mem: argslist[8], Cpus: argslist[7]}
 	container.Netspec = apis.NetSpec{argslist[4], argslist[5], argslist[6], argslist[10]}
 
+  //创建Cephfs目录并根据相关目录结构进行挂载
+  /*
+  if err := CreateMountfs(container.Appname); err == nil {
+      Logger("Successful to create and mount the cephfs ",apis.DataPath+container.Appname)
+  }
+  */
+
+
+
+
 	//b as a []byte
 	b, err := json.Marshal(container)
 	if err != nil {
@@ -259,6 +269,14 @@ func JFDockerRunGpu(args string) (*apis.RspJFDocker, error) {
 	container.Image = argslist[2]
 	container.Conspec = apis.ConSpec{argslist[0], argslist[1], argslist[8], argslist[7], argslist[11]}
 	container.Netspec = apis.NetSpec{argslist[4], argslist[5], argslist[6], argslist[10]}
+
+  // 检查并创建容器共享存储. GPU当前环境没有可用CephFs集群
+  /*
+  if err := CreateMountfs(container.Appname); err == nil {
+      Logger("Successful to create and mount the cephfs ",apis.DataPath+container.Appname)
+  }
+
+  */
 
 	b, err := json.Marshal(container)
 	if err != nil {

@@ -39,6 +39,7 @@ func init() {
 			log.Fatalf("Failed to create container_conf dir:", conpatherr.Error())
 		}
 	}
+  // 判断数据目录是否存在如果不存在进行创建apis.DataPath(default: /export/. Option: /data/)
 }
 
 func main() {
