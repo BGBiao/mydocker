@@ -1,4 +1,4 @@
-logpath: /export/Logs/
-configdir: containers_config
-pauseimage: f66f4bd9b894
-datapath: /data/
+#logpath: /export/Logs/
+#configdir: containers_config
+#pauseimage: f66f4bd9b894
+#datapath: /data/
