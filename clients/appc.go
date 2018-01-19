@@ -139,11 +139,11 @@ func RunGpuAppc(pauseid, name, appimage, cpus, mems, alloc_cnt string) (appcid s
 	fmt.Println(alloc_gpus_id, cpushares, cpuquota)
 
 	var appconid string
-	//conspecconf := apis.LogPath+apis.ConConfDir+"/ConSpec"+name
+	conspecconf := apis.LogPath+apis.ConConfDir+"/ConSpec"+name
 	//后期是否需要挂载配置文件
   // 挂载CephFS相关目录，需要在-v apis.DataPath+name:/data
 	//fmt.Println(NV_GPU="+alloc_gpus_id+" nvidia-docker run -itd  --name  "+name+" --net=container:"+pauseid+" --ipc=container:"+pauseid+" -m "+mems+" --cpu-shares "+cpushares+" --cpu-quota "+cpuquota+" --cpu-period 100000 -p 80:5000 "+appimage)
-	if appcid, err := exec.Command("/bin/bash", "-c", `NV_GPU=`+alloc_gpus_id+` nvidia-docker run -itd  --name  `+name+` --net=container:`+pauseid+` --ipc=container:`+pauseid+` -m `+mems+` --cpu-shares `+cpushares+` --cpu-quota `+cpuquota+` --cpu-period 100000  `+appimage).Output(); err == nil {
+	if appcid, err := exec.Command("/bin/bash", "-c", `NV_GPU=`+alloc_gpus_id+` nvidia-docker run -itd  --name  `+name+` -v `+conspecconf+`:/export/config_info  -v `+apis.DataPath+name+`:/data --net=container:`+pauseid+` --ipc=container:`+pauseid+` -m `+mems+` --cpu-shares `+cpushares+` --cpu-quota `+cpuquota+` --cpu-period 100000  `+appimage).Output(); err == nil {
 		appconid = strings.Replace(string(appcid), "\n", "", -1)
 	} else {
 		fmt.Println("appcontainer 创建失败，请检查容器参数" + err.Error())
