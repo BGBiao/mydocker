@@ -73,3 +73,13 @@ func ReadFromConf(name string) (runargs string,err error)
 问题:clients/Conf.go
 28 行,func WriteToConf(name,content string) 使用的是文件对象的WriteString(string)方法
 
+
+## TODO 
+- [ ] 当前环境未将pause容器以及应用容器做成原子性操作,可能导致应用容器失败后jfdocker异常退出，但是pause容器依然占用ip
+- [ ] 需要定义一下当前JFDocker的日志输出级别,目前所有的级别都是info
+- [x] 在构建jfdocker中需要配备getusedgpuinfo程序，帮助用户查看GPU环境下的卡使用情况
+- [x] 容器本地配置信息管理(/etc/JFDocker/config.yml runConfconname)
+- [x] 数据持久化接口[对接CEPHFS或者本地映射存储]
+- [ ] JFDocker2.0返回信息标准化
+- [ ] 调整标准docker-go接口，支持多参数创建以及动态传入hostname
+- [ ] 
