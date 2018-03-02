@@ -77,14 +77,18 @@ func GetFreeGpus(alloc int, usedGpus string) (freeGpus []string) {
 	//当midn不等于0时，说明第一组GPU卡没有分配完
 	//fmt.Println(midn)
 	if midn > 0 {
+    //申请的GPU卡数<中值+1
 		if alloc <= midn+1 {
 			alloc_gpus_pool = freeGpus_pool[0:alloc]
+    //空闲gpu卡列表大于申请数量
 		} else if len(freeGpus_pool[midn+1:]) >= alloc {
 			alloc_gpus_pool = freeGpus_pool[midn+1 : midn+1+alloc]
+    //没有亲和性最大的gpu卡设备
 		} else {
-			alloc_gpus_pool = freeGpus_pool[midn-1 : midn-1+alloc]
+      fmt.Println(midn,alloc,string(len(freeGpus_pool)))
+			//alloc_gpus_pool = freeGpus_pool[midn-1 : midn-1+alloc]
 			fmt.Println("没有亲缘性的GPU节点,请检查!如有需要请手动指定多跨CPU的卡设备", alloc_gpus_pool)
-			os.Exit(2)
+			//os.Exit(2)
 		}
 		//midn = 0 midv 为中值GPU 即为3
 	} else if midn = 0; freeGpus_pool[0] == midv {

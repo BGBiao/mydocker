@@ -36,7 +36,15 @@ func Appc(pauseid, name, appimage, cpus, mems string) (appcid string, err error)
 	//在docker中--hostname和当前--net=container:cid 不能共用.因此当前不能手工设置容器内部的容器名
   //-v ConSpecConf:/export/config_info 
   //-v /data/biao:/data(a cephfs)
-	if appcid, err := exec.Command("/bin/bash", "-c", `docker run -itd --name `+name+` -v `+conspecconf+`:/export/config_info  -v `+apis.DataPath+name+`:/data --net=container:`+pauseid+` --ipc=container:`+pauseid+` -m `+mems+` --cpu-shares `+cpushares+` --cpu-quota `+cpuquota+` --cpu-period 100000 `+appimage).Output(); err == nil {
+
+  //指定用户的/dev/shm大小
+  shmSize := strings.Split(mems,"m")[0]
+  shm,_ := strconv.Atoi(shmSize)
+  shmsize := strconv.Itoa(shm/2)+"m"
+  
+  //注意--shm-size参数不能和--ipc一起使用 
+	//if appcid, err := exec.Command("/bin/bash", "-c", `docker run -itd --name `+name+` -v `+conspecconf+`:/export/config_info  -v `+apis.DataPath+name+`:/data --net=container:`+pauseid+` --ipc=container:`+pauseid+` -m `+mems+` --cpu-shares `+cpushares+` --cpu-quota `+cpuquota+` --cpu-period 100000 --shm-size `+shmsize+" "+appimage).Output(); err == nil {
+	if appcid, err := exec.Command("/bin/bash", "-c", `docker run -itd --name `+name+` -v `+conspecconf+`:/export/config_info  -v `+apis.DataPath+name+`:/data --net=container:`+pauseid+` -m `+mems+` --cpu-shares `+cpushares+` --cpu-quota `+cpuquota+` --cpu-period 100000 --shm-size `+shmsize+" "+appimage).Output(); err == nil {
 		appconid = strings.Replace(string(appcid), "\n", "", -1)
 	} else {
 		fmt.Println("appcontainer 创建失败，请检查容器参数" + err.Error())
@@ -140,10 +148,16 @@ func RunGpuAppc(pauseid, name, appimage, cpus, mems, alloc_cnt string) (appcid s
 
 	var appconid string
 	conspecconf := apis.LogPath+apis.ConConfDir+"/ConSpec"+name
+
+  //指定用户的/dev/shm大小
+  shmSize := strings.Split(mems,"m")[0]
+  shm,_ := strconv.Atoi(shmSize)
+  shmsize := strconv.Itoa(shm/2)+"m"
+
 	//后期是否需要挂载配置文件
   // 挂载CephFS相关目录，需要在-v apis.DataPath+name:/data
-	//fmt.Println(NV_GPU="+alloc_gpus_id+" nvidia-docker run -itd  --name  "+name+" --net=container:"+pauseid+" --ipc=container:"+pauseid+" -m "+mems+" --cpu-shares "+cpushares+" --cpu-quota "+cpuquota+" --cpu-period 100000 -p 80:5000 "+appimage)
-	if appcid, err := exec.Command("/bin/bash", "-c", `NV_GPU=`+alloc_gpus_id+` nvidia-docker run -itd  --name  `+name+` -v `+conspecconf+`:/export/config_info  -v `+apis.DataPath+name+`:/data --net=container:`+pauseid+` --ipc=container:`+pauseid+` -m `+mems+` --cpu-shares `+cpushares+` --cpu-quota `+cpuquota+` --cpu-period 100000  `+appimage).Output(); err == nil {
+	//fmt.Println(NV_GPU="+alloc_gpus_id+" nvidia-docker run -itd  --name  "+name+" --net=container:"+pauseid+" --ipc=container:"+pauseid+" -m "+mems+" --cpu-shares "+cpushares+" --cpu-quota "+cpuquota+" --cpu-period 100000 -p 80:5000 --shm-size "+shmsize+" "+appimage)
+	if appcid, err := exec.Command("/bin/bash", "-c", `NV_GPU=`+alloc_gpus_id+` nvidia-docker run -itd  --name  `+name+` -v `+conspecconf+`:/export/config_info  -v `+apis.DataPath+name+`:/data --net=container:`+pauseid+`  -m `+mems+` --cpu-shares `+cpushares+` --cpu-quota `+cpuquota+` --cpu-period 100000  --shm-size `+shmsize+` `+appimage).Output(); err == nil {
 		appconid = strings.Replace(string(appcid), "\n", "", -1)
 	} else {
 		fmt.Println("appcontainer 创建失败，请检查容器参数" + err.Error())
