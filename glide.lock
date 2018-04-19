@@ -1,0 +1,12 @@
+hash: 45c2027c24ee6a0f67fdacd091acfe342a91c846f8455a0e32add33eab245bfe
+updated: 2018-04-19T16:09:28.660777737+08:00
+imports:
+- name: github.com/fsouza/go-dockerclient
+  version: eb4b27262d9a41d4004d101c32e0598782a39415
+- name: github.com/sirupsen/logrus
+  version: 778f2e774c725116edbc3d039dc0dfc1cc62aae8
+- name: github.com/urfave/cli
+  version: 8e01ec4cd3e2d84ab2fe90d8210528ffbb06d8ff
+- name: gopkg.in/yaml.v2
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+testImports: []

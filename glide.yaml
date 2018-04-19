@@ -1,5 +1,15 @@
-package: github.com/xxbandy/mydocker
+package: .
 import:
 - package: github.com/sirupsen/logrus
 - package: github.com/urfave/cli
 - package: gopkg.in/yaml.v2
+- package: github.com/fsouza/go-dockerclient
+# - package: github.com/docker/docker/api/types/registry
+# - package: github.com/docker/docker/api/types/swarm
+# - package: github.com/docker/docker/opts
+# - package: github.com/docker/docker/pkg/archive
+# - package: github.com/docker/docker/pkg/fileutils
+# - package: github.com/docker/docker/pkg/homedir
+# - package: github.com/docker/docker/pkg/jsonmessage
+# - package: github.com/docker/docker/pkg/stdcopy
+# - package: github.com/docker/go-units
